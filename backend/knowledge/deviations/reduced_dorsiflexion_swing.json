@@ -1,0 +1,28 @@
+{
+  "id": "reduced_dorsiflexion_swing",
+  "name": "Reduced dorsiflexion during swing",
+  "possible_contributors": [
+    {
+      "id": "dorsiflexor_weakness",
+      "priority": 1,
+      "description": "Reduced dorsiflexor activation or strength may contribute."
+    },
+    {
+      "id": "restricted_ankle_rom",
+      "priority": 2,
+      "description": "Limited ankle dorsiflexion range may contribute."
+    },
+    {
+      "id": "motor_control",
+      "priority": 3,
+      "description": "Altered motor control may contribute."
+    }
+  ],
+  "clinical_assessments": [
+    { "id": "ankle_rom", "name": "Ankle ROM assessment" },
+    { "id": "dorsiflexor_strength", "name": "Dorsiflexor strength assessment" }
+  ],
+  "training_targets": [
+    { "id": "foot_clearance", "name": "Improve swing-phase foot clearance" }
+  ]
+}
