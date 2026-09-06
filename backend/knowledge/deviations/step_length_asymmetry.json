@@ -1,0 +1,16 @@
+{
+  "id": "step_length_asymmetry",
+  "name": "Step-length asymmetry",
+  "possible_contributors": [
+    { "id": "unilateral_weakness", "priority": 1, "description": "Unilateral lower-limb weakness may contribute." },
+    { "id": "pain_avoidance", "priority": 2, "description": "Pain-avoidance strategies may contribute." },
+    { "id": "limb_length_discrepancy", "priority": 3, "description": "Limb length discrepancy may contribute." }
+  ],
+  "clinical_assessments": [
+    { "id": "limb_length", "name": "Limb length assessment" },
+    { "id": "lower_limb_strength", "name": "Lower-limb strength assessment" }
+  ],
+  "training_targets": [
+    { "id": "step_symmetry", "name": "Improve step-length symmetry" }
+  ]
+}

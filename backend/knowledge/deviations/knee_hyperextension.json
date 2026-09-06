@@ -1,0 +1,16 @@
+{
+  "id": "knee_hyperextension",
+  "name": "Knee hyperextension",
+  "possible_contributors": [
+    { "id": "quadriceps_control", "priority": 1, "description": "Altered quadriceps control may contribute." },
+    { "id": "plantarflexor_weakness", "priority": 2, "description": "Plantarflexor weakness may contribute." },
+    { "id": "proprioceptive_deficit", "priority": 3, "description": "Reduced proprioceptive feedback may contribute." }
+  ],
+  "clinical_assessments": [
+    { "id": "quadriceps_strength", "name": "Quadriceps strength assessment" },
+    { "id": "knee_proprioception", "name": "Knee proprioception assessment" }
+  ],
+  "training_targets": [
+    { "id": "stance_knee_control", "name": "Improve stance-phase knee control" }
+  ]
+}

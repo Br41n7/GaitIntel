@@ -3,6 +3,9 @@
 **Version:** 1.0.0
 **Classification:** Software as a Medical Device (SaMD) — Clinical Decision Support System (CDSS)
 **Target Audience:** Prosthetists, Orthotists, Biomechanists, Physiotherapists, Clinical Software Engineers
+**Version:** 1.0.0
+**Classification:** Software as a Medical Device (SaMD) — Clinical Decision Support System (CDSS)
+**Target Audience:** Prosthetists, Orthotists, Biomechanists, Physiotherapists, Clinical Software Engineers
 
 ---
 
@@ -490,9 +493,7 @@ Tracks a patient's functional progress across multiple clinical visits and inter
 Generates a structured clinical report ready for signature and insertion into Electronic Health Record (EHR) systems.
 
 ```
-================================================================================
                        GAITINTEL CLINICAL ANALYSIS REPORT
-================================================================================
 PATIENT ID: P-98402                 ASSESSMENT DATE: 2026-09-05
 AGE: 48 | SEX: Female               ASSESSOR: Dr. J. Vance, CPO
 DEVICE: Rigid AFO (Left Limb)       SIDE ANALYZED: Bilateral
@@ -524,8 +525,9 @@ DEVICE: Rigid AFO (Left Limb)       SIDE ANALYZED: Bilateral
 IMPORTANT CLINICAL NOTICE:
 "AI-generated findings are clinical decision-support information and do not
 constitute a medical diagnosis. Final interpretations and treatment decisions
+"AI-generated findings are clinical decision-support information and do not
+constitute a medical diagnosis. Final interpretations and treatment decisions
 must be rendered by a qualified licensed clinician."
-================================================================================
 ```
 
 ---
