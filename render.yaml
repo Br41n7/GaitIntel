@@ -1,0 +1,53 @@
+# Render Blueprint — deploys the API (Docker web service), the frontend
+# (static site), and Postgres in one go. See DEPLOY.md for step-by-step
+# instructions and the caveats that matter for this project specifically
+# (ephemeral storage, cold starts, MediaPipe build time).
+#
+# Schema reference: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: gaitintel-db
+    plan: free  # Render free Postgres expires after 30 days — fine for
+    # testing this MVP, but switch to a paid plan before relying on it.
+
+services:
+  - type: web
+    name: gaitintel-api
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free  # free web services spin down after inactivity — first
+    # request after idle will be slow (cold start + MediaPipe import).
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gaitintel-db
+          property: connectionString
+      - key: CORS_ORIGINS
+        value: https://gaitintel-frontend.onrender.com
+      - key: VIDEO_STORAGE_PATH
+        value: /app/storage/videos
+      # NOTE: this path is NOT persistent on Render's free tier — every
+      # deploy or restart wipes uploaded videos and pose data. Fine for
+      # a testing pass; add a paid persistent Disk (see DEPLOY.md) once
+      # you need uploads to survive a redeploy.
+
+  - type: web
+    name: gaitintel-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://gaitintel-api.onrender.com
+        # Vite bakes this in at BUILD time, not runtime — if you rename
+        # the API service, you must update this and trigger a rebuild
+        # of the frontend, not just a restart.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+        # Required for React Router: without this, refreshing on
+        # /patients/:id returns a 404 instead of the SPA shell.

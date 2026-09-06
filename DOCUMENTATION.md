@@ -4,6 +4,15 @@
 **Classification:** Software as a Medical Device (SaMD) — Clinical Decision Support System (CDSS)
 **Target Audience:** Prosthetists, Orthotists, Biomechanists, Physiotherapists, Clinical Software Engineers
 
+> ## ⚠️ This is a target-state specification, not a status report
+> Everything in this document describes the **full planned system (V1 through V7)**. It is a design reference for where GaitIntel is headed — it is **not** a description of what currently runs.
+>
+> For what's actually built and working today, see [README.md](README.md), specifically the "Current Implementation Status" table. As of this writing: patient/assessment management, video upload, and real MediaPipe pose extraction with skeleton overlay are built and tested. Joint-angle calculation, gait-cycle segmentation, real metrics, the 10 deviation detectors, the prosthetic/orthotic modules, ML classifiers, audit trails, and everything else in this document beyond the knowledge-engine lookup are **not yet implemented**.
+>
+> Also note: the frontend tech stack referenced later in this document (§22) as "Next.js 14" is aspirational/inaccurate — the project actually uses **React + Vite**, chosen deliberately. Treat any other implementation detail here the same way: as a target, not a fact about the current codebase, unless README.md's status table confirms it.
+>
+> **A note on the SaMD classification claim above:** labeling software as Software as a Medical Device is a real regulatory category with legal weight. Don't present this document, or GaitIntel generally, as SaMD-classified or clinically validated to anyone outside this project until it has actually gone through that process — the classification header above describes an aspiration for V7, not a current status.
+
 ---
 
 ## Table of Contents
@@ -576,7 +585,7 @@ Provides researchers and P&O educators with raw, un-aggregated kinematic coordin
 ```
        ┌──────────────────────────────────────────────────────────┐
        │                       FRONTEND                           │
-       │ Next.js 14 (App Router), TypeScript, Tailwind, Recharts │
+       │ React + Vite, TypeScript, Tailwind, Recharts               │
        └────────────────────────────┬─────────────────────────────┘
                                     │ REST API / WebSockets
        ┌────────────────────────────▼─────────────────────────────┐
