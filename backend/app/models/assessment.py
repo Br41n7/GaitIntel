@@ -52,6 +52,10 @@ class Assessment(Base):
     results = Column(JSON, nullable=True)  # GaitMetrics + findings, see pipeline/gait_types.py
     clinician_notes = Column(Text, nullable=True)
 
+    # Populated when status == failed, so the frontend can show *why*
+    # instead of leaving the person staring at a stuck spinner forever.
+    error_message = Column(Text, nullable=True)
+
     analysis_version = Column(String, nullable=True)
     knowledge_version = Column(String, nullable=True)
 

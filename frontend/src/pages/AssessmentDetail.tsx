@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, mediaUrl, poseApi } from "../lib/api";
 import FindingCard from "../components/FindingCard";
+import JointAngleChart from "../components/JointAngleChart";
 import PoseOverlayVideo from "../components/PoseOverlayVideo";
 import VideoUpload from "../components/VideoUpload";
 import type { Assessment } from "../types";
@@ -56,13 +57,61 @@ export default function AssessmentDetail() {
     setExtracting(true);
     setError(null);
     try {
-      await poseApi.extractPose(assessmentId);
-      load();
+      await poseApi.extractPose(assessmentId); // returns immediately — status becomes "pose_extracting"
+      pollUntilSettled();
     } catch (e) {
       setError(String(e));
-    } finally {
       setExtracting(false);
     }
+  };
+
+  /** Polls the assessment every 3s while a background task (pose
+   * extraction) is in flight. Needed because extraction runs as a
+   * server-side background task, not synchronously in the request —
+   * see backend/app/api/pose.py for why. Stops on any terminal status
+   * or after a generous timeout, so a crashed task doesn't poll forever. */
+  const pollUntilSettled = () => {
+    if (!assessmentId) return;
+    const POLL_INTERVAL_MS = 3000;
+    const MAX_POLLS = 100; // ~5 minutes — generous for slow/free-tier hosting
+    let pollCount = 0;
+
+    const interval = setInterval(async () => {
+      pollCount += 1;
+      try {
+        const a = await api.getAssessment(assessmentId);
+        setAssessment(a);
+        setNotes(a.clinician_notes ?? "");
+
+        if (a.status === "pose_extracted" || a.status === "analyzed" || a.status === "reviewed") {
+          clearInterval(interval);
+          setExtracting(false);
+          setRunning(false);
+          poseApi
+            .getPoseData(assessmentId)
+            .then((d) => setPoseFrames(d.frames))
+            .catch(() => setPoseFrames(null));
+        } else if (a.status === "failed") {
+          clearInterval(interval);
+          setExtracting(false);
+          setRunning(false);
+          setError(a.error_message ?? "Processing failed for an unknown reason.");
+        } else if (pollCount >= MAX_POLLS) {
+          clearInterval(interval);
+          setExtracting(false);
+          setRunning(false);
+          setError(
+            "Still processing after several minutes — this may mean the server ran out of " +
+              "resources (common on free hosting tiers). Try a shorter video, or check server logs."
+          );
+        }
+      } catch (e) {
+        clearInterval(interval);
+        setExtracting(false);
+        setRunning(false);
+        setError(String(e));
+      }
+    }, POLL_INTERVAL_MS);
   };
 
   const handleRunAnalysis = async () => {
@@ -118,6 +167,12 @@ export default function AssessmentDetail() {
           >
             {extracting ? "Extracting pose…" : "Extract pose"}
           </button>
+          {extracting && (
+            <p className="text-xs text-slate-500">
+              This runs in the background and can take a while on constrained/free hosting — the page
+              checks progress automatically every few seconds, no need to refresh.
+            </p>
+          )}
         </div>
       )}
 
@@ -154,13 +209,31 @@ export default function AssessmentDetail() {
             </div>
           </div>
 
+          {assessment.results.joint_angle_trajectories?.length > 0 && (
+            <div>
+              <h2 className="text-sm font-medium text-slate-600">Joint angle trajectories (0-100% gait cycle)</h2>
+              <div className="mt-2 grid gap-3 sm:grid-cols-3">
+                <JointAngleChart joint="hip" trajectories={assessment.results.joint_angle_trajectories} />
+                <JointAngleChart joint="knee" trajectories={assessment.results.joint_angle_trajectories} />
+                <JointAngleChart joint="ankle" trajectories={assessment.results.joint_angle_trajectories} />
+              </div>
+            </div>
+          )}
+
           <div>
             <h2 className="text-sm font-medium text-slate-600">Detected findings</h2>
-            <div className="mt-2 space-y-2">
-              {assessment.results.findings.map((f) => (
-                <FindingCard key={f.finding.id} item={f} />
-              ))}
-            </div>
+            {assessment.results.findings.length === 0 ? (
+              <p className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">
+                {assessment.results.findings_status ??
+                  "No findings — deviation detection is not implemented yet."}
+              </p>
+            ) : (
+              <div className="mt-2 space-y-2">
+                {assessment.results.findings.map((f) => (
+                  <FindingCard key={f.finding.id} item={f} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

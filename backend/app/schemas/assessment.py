@@ -29,6 +29,7 @@ class AssessmentOut(BaseModel):
     video_height: int | None = None
     results: dict[str, Any] | None = None
     clinician_notes: str | None = None
+    error_message: str | None = None
     analysis_version: str | None = None
     knowledge_version: str | None = None
     created_at: datetime

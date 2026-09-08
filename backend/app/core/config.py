@@ -15,6 +15,13 @@ class Settings(BaseSettings):
     video_storage_path: str = "./storage/videos"
     cors_origins: str = "http://localhost:5173"
 
+    # Guards against OOM / runaway processing time on constrained hosting
+    # (e.g. Render's free tier: 0.1 vCPU, 512MB RAM). MediaPipe extraction
+    # holds every frame's landmarks in memory and is CPU-bound per frame,
+    # so a long video on a slow/small instance can exhaust either. Raise
+    # this once running on hardware that can actually handle longer clips.
+    max_pose_extraction_frames: int = 300  # ~10s at 30fps
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

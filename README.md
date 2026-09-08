@@ -24,11 +24,11 @@ Status as of the latest commit. "Built" means real, tested code — not a data m
 | Landmark smoothing / missing-landmark handling | ✅ Built | Exponential smoothing + hold-last-good-value below visibility threshold |
 | Skeleton overlay on video | ✅ Built | Canvas overlay synced to video playback by timestamp |
 | Clinical knowledge engine | ✅ Built | Loads JSON deviation files, returns possible contributors / assessments / training targets |
-| Joint-angle calculation | ❌ Not built | Next up — see Phase 3 below |
-| Gait-cycle segmentation | ❌ Not built | Phase 3 |
-| Real gait metrics (cadence, stance/swing time, ROM, asymmetry) | ❌ Not built | `run_analysis` currently returns **hardcoded stub values** — see `backend/app/api/analysis.py` |
-| Deviation detectors (the 10 rules) | ❌ Not built | Stub returns 2 hardcoded sample findings, not computed detections |
-| Confidence separation (detection / interpretation / evidence) | 🟡 Partial | Data model supports it; values aren't independently computed yet |
+| Joint-angle calculation | ✅ Built | `calculate_angle()` + per-frame hip/knee/ankle flexion series, validated against synthetic ground truth |
+| Gait-cycle segmentation | ✅ Built | Initial-contact/toe-off detection (kinematic method, no force plate) + 0-100% cycle normalization |
+| Real gait metrics (cadence, stance/swing time, ROM, asymmetry) | ✅ Built | Computed from real pose data — see caveats in `backend/app/gait/metrics.py` (`walking_velocity_m_s` is intentionally always `None` — no camera calibration exists to convert normalized coordinates to real-world units) |
+| Deviation detectors (the 10 rules) | ❌ Not built | Phase 4 — `findings: []` with an explicit `findings_status` message rather than fake data |
+| Confidence separation (detection / interpretation / evidence) | 🟡 Partial | Data model supports it; not populated until Phase 4 findings exist |
 | Trainer knowledge-editor UI | ❌ Not built | v0.2+ |
 | Prosthetic / orthotic modules | ❌ Not built | v0.2+ (documented as V2/V3 in the vision doc) |
 | PDF/HTML report generation | ❌ Not built | v0.2+ |
@@ -136,8 +136,8 @@ See `DEPLOY.md` for deploying a test instance to Render.
 
 ---
 
-## 7. What's next (Phase 3)
+## 7. What's next (Phase 4)
 
-Replace `_run_stub_analysis()` in `backend/app/api/analysis.py` with real computation over the pose data already being extracted: joint-angle calculation from landmark triples, gait-cycle segmentation (initial contact to next initial contact, normalized 0–100%), and the actual metrics (cadence, stance/swing time, ROM, asymmetry). The 10 deviation detectors and real confidence separation follow once metrics are real.
+The 10 deterministic gait-deviation detectors, computed from the real metrics and joint-angle trajectories Phase 3 now produces (knee hyperextension, excessive/reduced knee flexion, reduced dorsiflexion, circumduction, hip hiking, trunk lean, step/stance-time asymmetry, etc.) — replacing the current `findings: []` placeholder in `backend/app/api/analysis.py`. Each detector's output routes through the existing `ClinicalKnowledgeEngine`, which is already built and tested.
 
 For the long-term roadmap beyond that (prosthetic/orthotic modules, ML classifiers, multi-camera 3D, sensor fusion, clinical validation), see `DOCUMENTATION.md` — treat every section there as a target to build toward, not a status report.

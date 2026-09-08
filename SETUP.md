@@ -64,17 +64,41 @@ npm run dev
 
 ## Known v0.1 limitations worth knowing about
 
-- Pose extraction runs synchronously in the request — fine for short clinic
-  clips, but a multi-minute video will hold the HTTP connection open for a
-  while. Move this to a background task (FastAPI `BackgroundTasks`, or a
-  proper queue like Celery/RQ) before this goes anywhere near production
-  video lengths.
+- **Root cause of the "stuck on Extracting pose" issue, fixed in this
+  version:** pose extraction previously ran synchronously inside the
+  HTTP request. Render's free tier gives each service 0.1 vCPU and
+  512MB RAM — MediaPipe extraction that takes seconds locally can take
+  minutes there, or exhaust memory and get the process killed mid-request,
+  before it could even mark the assessment as failed. It now runs as a
+  background task: the request returns immediately, and the frontend
+  polls for status. A hard cap (`MAX_POSE_EXTRACTION_FRAMES`, default
+  300 ≈ 10s at 30fps) also rejects videos too long for constrained
+  hosting to process reliably — raise it via an env var once running on
+  hardware that can actually handle longer clips.
+- Even with the background-task fix, a **long-running extraction on the
+  free tier can still be killed if the service spins down** — free web
+  services spin down after 15 minutes with no incoming HTTP request,
+  and that check doesn't know or care that a background task is still
+  running. For anything beyond quick testing with short clips, use at
+  least the Starter plan (always-on, no spin-down).
+- **Schema change: if you already have a Postgres database from a
+  previous deploy**, the new `error_message` column on `assessments`
+  won't appear automatically — `Base.metadata.create_all()` only
+  creates missing tables, not new columns on existing ones. Either
+  drop and recreate the `gaitintel-db` database (fine for a testing
+  environment with no real data yet) or add the column manually. This
+  is exactly the class of problem Alembic migrations exist to solve —
+  worth prioritizing once the schema stops changing every session.
+- Pose extraction and analysis both currently accept any assessment
+  regardless of video content — see `GaitAnalysisError` in
+  `app/gait/pipeline.py` for the one guard that exists (rejects videos
+  with fewer than 10 frames of detected pose, e.g. no human visible).
 - `Base.metadata.create_all()` on startup is fine for a fresh dev DB but
   does not handle schema migrations — once real data exists, switch to
   Alembic before changing any model.
 
 ## Next up
 
-Phase 3 (build order): joint-angle calculation, gait-cycle segmentation,
-gait metrics — replacing the `_run_stub_analysis()` function with real
-computation over `assessment.pose_data`.
+Phase 4 (build order): the 10 deterministic gait-deviation detectors,
+replacing the current empty `findings: []` with real detections computed
+from the metrics Phase 3 now produces.

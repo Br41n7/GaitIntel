@@ -78,9 +78,20 @@ export interface FindingWithKnowledge {
   clinical_hypothesis: ClinicalHypothesis;
 }
 
+export interface JointAngleTrajectory {
+  joint: "hip" | "knee" | "ankle";
+  side: Side;
+  percent_gait_cycle: number[];
+  angle_degrees: number[];
+}
+
 export interface AssessmentResults {
   metrics: GaitMetrics;
+  joint_angle_trajectories: JointAngleTrajectory[];
+  gait_cycles: Record<string, unknown>;
+  events: Record<string, { initial_contacts: number[]; toe_offs: number[] }>;
   findings: FindingWithKnowledge[];
+  findings_status: string | null; // e.g. "Deviation detection is not implemented yet (Phase 4)."
   analysis_version: string;
 }
 
@@ -96,6 +107,7 @@ export interface Assessment {
   video_height: number | null;
   results: AssessmentResults | null;
   clinician_notes: string | null;
+  error_message: string | null;
   analysis_version: string | null;
   knowledge_version: string | null;
   created_at: string;
